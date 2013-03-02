@@ -1,57 +1,73 @@
-from django.utils import unittest
-from django.test.client import RequestFactory
-from django.contrib.auth.models import User, AnonymousUser
+"""
+Basic tests for errordite log handler.
+
+You will need a valid Errordite account in order to run these tests,
+and will need to set a local environment variable ERRORDITE_TOKEN with
+your Errordite account token. (This is so that the token is not stored
+in the public repo.)
+"""
+import os
+import unittest
 import logging
+from . import ErrorditeHandler
+
+ERRORDITE_TOKEN = os.environ.get("ERRORDITE_TOKEN", None)
+if ERRORDITE_TOKEN is None:
+    raise Exception("You must set environment variable ERRORDITE_TOKEN "
+        "before running these tests.")
 
 
 class ErrorditeHandlerTestCase(unittest.TestCase):
 
     def setUp(self):
-        self.logger = logging.getLogger('errordite_logger')
-        # Every test needs access to the request factory.
-        self.factory = RequestFactory()
-        self.request = self.factory.get('/')
+        self.handler = ErrorditeHandler(ERRORDITE_TOKEN)
+        self.logger = logging.getLogger(__name__)
+        self.logger.addHandler(self.handler)
+        self.logger.level = logging.DEBUG
+        self.assertEqual(len(self.logger.handlers), 1)
 
-    def test_log_error(self):
-        try:
-            throw_exception("test_log_error")
-        except:
-            self.logger.error('This is an ERROR message')
+    def tearDown(self):
+        self.logger.handlers = []
 
-    def test_with_request(self):
-        try:
-            throw_exception("test_with_request")
-        except:
-            self.logger.error(
-                'This is an ERROR message',
-                extra={"request": self.request}
-            )
+    def test_logging_no_exception_does_nothing(self):
+        "Test that a log record with no exc_info doesn't do anything."
+        func = self.test_logging_no_exception_does_nothing
+        self.logger.debug(func.__doc__)
 
-    def test_with_request_and_anonymous_user(self):
+    def test_logging_error(self):
+        "Test logging a real exception with logging.error."
+        func = self.test_logging_error
         try:
-            self.request.user = AnonymousUser()
-            throw_exception("test_with_request_and_anonymous_user")
-        except:
-            self.logger.error(
-                'This is an ERROR message',
-                extra={"request": self.request}
-            )
+            throw_exception(func.__name__)
+        except CustomException:
+            self.logger.error(func.__doc__)
+            print ("Please check Errordite for a new issue with the "
+                "messsage '%s'" % func.__doc__)
 
-    def test_with_request_and_known_user(self):
+    def test_logging_exception(self):
+        "Test logging a real exception with logging.exception."
+        func = self.test_logging_exception
         try:
-            self.request.user = User.objects.create_user(
-                "fred", "fred@example.com", "fred's password"
-            )
-            throw_exception("test_with_request_and_anonymous_user")
-        except:
-            self.logger.error(
-                'This is an ERROR message',
-                extra={"request": self.request}
-            )
+            throw_exception(func.__name__)
+        except CustomException:
+            self.logger.exception(func.__doc__)
+            print ("Please check Errordite for a new issue with the "
+                "messsage '%s'" % func.__doc__)
+
+    def test_logging_with_complex_message(self):
+        "Test the user of format string and args in logged message."
+        func = self.test_logging_with_complex_message
+        try:
+            throw_exception(func.__name__)
+        except CustomException:
+            self.logger.exception("%s: %s", func.__doc__, 'ok')
+            print ("Please check Errordite for a new issue with the "
+                "messsage '%s'" % func.__doc__)
 
 
 class CustomException(Exception):
-    pass
+    def __init__(self, message):
+        super(CustomException, self).__init__(message)
 
 
 def throw_exception(message):
