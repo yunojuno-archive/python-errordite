@@ -56,12 +56,12 @@ variable (**ERRORDITE_TOKEN**), which is picked up in the test suite.
 
 If you are \*nix you can pass this in on the command line::
 
-    $ ERRORDITE_TOKEN=123 python -m unittest erroridite.tests
+    $ ERRORDITE_TOKEN=123 python -m unittest errordite.tests
 
 If you are on Windows you'll need to set it up explicitly as an env var::
 
     c:\> set ERRORDITE_TOKEN=123
-    c:\> python -m unittest erroridite.tests
+    c:\> python -m unittest errordite.tests
 
 (This is a technique used to prevent having to have sensitive information in
 the public repo.)
