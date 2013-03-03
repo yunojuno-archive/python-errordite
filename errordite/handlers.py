@@ -71,7 +71,7 @@ class ErrorditeHandler(logging.Handler):
         ex_source = traceback.extract_tb(ex_tb)[-1]
 
         payload = {
-            "TimestampUtc": datetime.datetime.now().isoformat(),
+            "TimestampUtc": datetime.datetime.utcnow().isoformat(),
             "Token": self.token,
             "MachineName": platform.node(),
             "ExceptionInfo": {
