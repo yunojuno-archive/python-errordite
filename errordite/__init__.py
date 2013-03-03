@@ -4,7 +4,7 @@ Custom log handler for posting errors to errordite (www.errordite.com).
 Dependencies: Requests (http://docs.python-requests.org)
 """
 __title__ = 'errordite'
-__version__ = '0.3'
+__version__ = '0.4'
 __author__ = 'Hugo Rodger-Brown'
 __license__ = 'Simplified BSD License'
 __copyright__ = 'Copyright 2013 Hugo Rodger-Brown'
