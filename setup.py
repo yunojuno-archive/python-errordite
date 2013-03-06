@@ -28,7 +28,7 @@ setup(
     license=open(join(dirname(__file__), 'LICENCE.md')).read(),
     description=meta['description'],
     long_description=open(join(dirname(__file__), 'README.rst')).read(),
-    url='https://github.com/hugorodgerbrown/python-errordite',
+    url='https://github.com/yunojuno/python-errordite',
     author=meta['author'],
     author_email='hugo@rodger-brown.com',
     classifiers=[
