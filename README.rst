@@ -6,7 +6,7 @@ error logging and management service, not unlike Sentry, but with more
 functionality around the classification and management of errors.
 
 The application is provided in the form of a standard Python logging handler.
-In order to log exceptions with Errorite, you simply use ``logging.error`` or
+In order to log exceptions with Errordite, you simply use ``logging.error`` or
 ``logging.exception`` in your ``except`` block::
 
     >>> import logging
@@ -33,25 +33,26 @@ have an unexpected effect if you are logging items as errors that have no
 explicit exception attached, but where a previous exception has been swallowed.
 
 In the example below - we are catching and swallowing the DoesNotExist error
-because it's a known code path. However, the exception does still exist and
-if you call sys.exc_info() further on it will return this exception::
+because it's a known code path::
 
     try:
         .. do something that raises a known error - e.g. model.DoesNotExist
     except model.DoesNotExist:
         .. we half expected this, so just ignore it for now
 
-A little further on in our example we are logging a business exception (trying
-to checkout a negative basket value) but not attaching any explicit python
-error::
+However, the exception has not been cleared, and if you call ``sys.exc_info()``
+further on it will still return the DoesNotExist error. A little further on in
+our example we are logging a business exception (trying to checkout a negative
+basket value) but not attaching any explicit python error::
 
     .. continue on with the method
+
     .. some time later
 
     if basket_total < 0:
-        logger.error("Someone tried to hack out checkout.")
+        logger.error("Someone tried to hack our checkout.")
 
-**In this case the wrong exception information will be recorded.**
+**In this case the wrong exception (DoesNotExist) information will be recorded.**
 
 The solution to this is to call ``sys.exc_clear()`` in the ``except`` block
 so that the exception is removed explicitly. The Python docs state that:
@@ -63,8 +64,10 @@ Which suggest that this is not recommended, however, they go on to state:
  *These include logging and error handling systems that report information
  on the last or current exception.*
 
-It is the author's opinion that this describes our exact predicament, and so
-the use of ``sys.exc_clear()`` is justified. 
+**It is the author's opinion** that this describes our exact predicament,
+and so the use of ``sys.exc_clear()`` is justified. (That said, you may also
+want to investigate why you are logging errors that aren't exceptions if
+you see this situation occurring.)
 
 Installation
 ------------
